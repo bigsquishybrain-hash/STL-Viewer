@@ -4,7 +4,7 @@ An offline STL viewer for PC, Android and iPad, built with three.js and Vite.
 
 ## Status
 
-Step 3 of 4: viewer, file library and tools. Offline install comes next.
+All 4 planned steps are done: viewer, library, tools, and installable offline app.
 
 ## Features so far
 
@@ -29,6 +29,20 @@ Step 3 of 4: viewer, file library and tools. Offline install comes next.
 - **Compare**: in the library hit Compare, pick 2 to 6 files, and they sit side by side on one build plate at true scale, each with its own color and label.
 - **Favorites and tags**: star files in the library or viewer, and tag them from the viewer panel. You can filter by favorites or by tag, and search matches tags too.
 - **Screenshot**: 📷 saves a PNG. On phones and tablets it opens the share sheet so you can save to Photos.
+
+## Install it (works offline afterwards)
+
+The app has to be opened once from an https address (see Hosting). After that:
+
+- **PC (Chrome/Edge):** click **⬇ Install** in the library toolbar, or the install icon in the address bar. Once installed, you can right-click an `.stl` and pick *Open with → STL Viewer*.
+- **Android (Chrome):** tap **⬇ Install**, or use the menu and pick *Add to Home screen*.
+- **iPad (Safari):** tap **⬇ Install** for the steps. In short: Share, then *Add to Home Screen*.
+
+Everything (app code, thumbnails, imported files, tags) is stored on the device. When a new version is deployed, the app shows *"A new version is ready"* with an **Update** button.
+
+## Hosting
+
+`.github/workflows/ci.yml` runs the tests and build on every PR. On pushes to `main` it also deploys `dist/` to GitHub Pages. Turn it on under **Settings → Pages → Source: GitHub Actions**. Any other static host (Netlify, Cloudflare Pages) works too: build command `npm run build`, output folder `dist`.
 
 ## Develop
 

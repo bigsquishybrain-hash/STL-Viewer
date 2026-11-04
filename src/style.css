@@ -402,3 +402,46 @@ td .tag-list { display: inline-flex; padding: 0 0 0 8px; }
 .compare-block { margin-bottom: 14px; }
 .compare-block h3 { margin: 0 0 4px; padding-left: 8px; border-left: 4px solid var(--accent); font-size: 13px; word-break: break-all; }
 .info .compare-block { display: block; border-bottom: 0; padding: 0; }
+
+/* ================= Step 4: install / offline ================= */
+
+.notice {
+  position: fixed;
+  left: 50%;
+  top: calc(12px + env(safe-area-inset-top));
+  transform: translateX(-50%);
+  z-index: 40;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 8px 8px 16px;
+  border-radius: var(--radius);
+  background: var(--panel-2);
+  border: 1px solid var(--accent);
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.45);
+  max-width: calc(100% - 32px);
+}
+.modal {
+  position: fixed;
+  inset: 0;
+  z-index: 50;
+  display: grid;
+  place-items: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.6);
+}
+.modal-card {
+  max-width: 420px;
+  padding: 20px 24px;
+  border-radius: 14px;
+  background: var(--panel);
+  border: 1px solid var(--border);
+}
+.modal-card h2 { margin: 0 0 8px; font-size: 18px; }
+.modal-card ol { padding-left: 20px; line-height: 1.8; }
+
+/* Installed on iOS with a translucent status bar: keep the top bar clear of the clock. */
+@media (display-mode: standalone) {
+  .topbar { padding-top: max(10px, env(safe-area-inset-top)); }
+  body { padding-top: 0; }
+}

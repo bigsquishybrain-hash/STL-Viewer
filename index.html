@@ -4,6 +4,15 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
     <meta name="theme-color" content="#16181c" />
+    <meta name="description" content="Offline STL library and 3D viewer" />
+    <link rel="manifest" href="./manifest.webmanifest" />
+    <link rel="icon" href="./icons/favicon-32.png" sizes="32x32" type="image/png" />
+    <link rel="icon" href="./icon.svg" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="STL Viewer" />
     <title>STL Viewer</title>
   </head>
   <body data-screen="library">
@@ -12,6 +21,7 @@
       <header class="topbar">
         <h1>STL Library</h1>
         <div class="spacer"></div>
+        <button id="install-btn" class="btn" hidden>⬇ Install</button>
         <div class="add-menu">
           <button id="add-btn" class="btn primary" aria-haspopup="menu" aria-expanded="false">+ Add</button>
           <div id="add-popup" class="popup" role="menu" hidden>
@@ -167,6 +177,20 @@
 
     <div id="drop-overlay" class="drop-overlay" hidden>Drop it like it's hot</div>
     <div id="toast" class="toast" hidden></div>
+    <div id="notice" class="notice" role="status" hidden><span id="notice-text"></span><button id="notice-action" class="btn primary" hidden></button><button id="notice-close" class="icon-btn" aria-label="Dismiss">✕</button></div>
+
+    <div id="ios-help" class="modal" hidden>
+      <div class="modal-card" role="dialog" aria-labelledby="ios-help-title">
+        <h2 id="ios-help-title">Install on iPad / iPhone</h2>
+        <ol>
+          <li>Open this page in <strong>Safari</strong>.</li>
+          <li>Tap the <strong>Share</strong> button <span aria-hidden="true">(□↑)</span>.</li>
+          <li>Pick <strong>Add to Home Screen</strong>, then <strong>Add</strong>.</li>
+        </ol>
+        <p class="muted">After that it launches full screen from your home screen and works with no internet. Files you import stay on the device.</p>
+        <button class="btn primary" data-close>Got it</button>
+      </div>
+    </div>
 
     <script type="module" src="/src/main.js"></script>
   </body>

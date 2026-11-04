@@ -3,6 +3,7 @@ import { Viewer } from './viewer.js';
 import { formatNumber, formatBytes } from './stats.js';
 import { Library, canPickFolders } from './library.js';
 import { LibraryView } from './libraryView.js';
+import { setupPwa } from './pwa.js';
 
 const PLA_DENSITY = 1.24; // g/cm³
 const SWATCHES = ['#4f9dde', '#e8e8e8', '#2b2b2b', '#e05a47', '#f2b134', '#4caf6e', '#9b6bd6', '#d98f5c'];
@@ -580,6 +581,33 @@ library.init().catch((err) => {
   console.error(err);
   toast("Couldn't open the library storage. Is this a private window?");
   renderLibrary();
+});
+
+// =====================================================================
+// Install + offline
+// =====================================================================
+
+function notify(msg, action) {
+  $('notice-text').textContent = msg;
+  const btn = $('notice-action');
+  btn.hidden = !action;
+  if (action) {
+    btn.textContent = action.label;
+    btn.onclick = () => {
+      $('notice').hidden = true;
+      action.run();
+    };
+  }
+  $('notice').hidden = false;
+  if (!action) setTimeout(() => ($('notice').hidden = true), 4000);
+}
+$('notice-close').addEventListener('click', () => ($('notice').hidden = true));
+
+setupPwa({
+  installBtn: $('install-btn'),
+  iosHelp: $('ios-help'),
+  notify,
+  onLaunchFiles: (files) => openFile(files[0]),
 });
 
 // Exposed for automated tests and console poking.
