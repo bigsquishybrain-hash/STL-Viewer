@@ -22,6 +22,7 @@ export class Library extends EventTarget {
     this.folders = []; // { id, name, handle, status: 'ok' | 'needs-permission' | 'error', count }
     this.entries = []; // see _makeEntry
     this.meta = new Map(); // cacheKey -> { thumb, stats }
+    this.tags = new Map(); // entry id -> { id, favorite, tags[] }
     this.thumbUrls = new Map(); // cacheKey -> object URL
     this._queue = [];
     this._working = false;
@@ -34,6 +35,7 @@ export class Library extends EventTarget {
     navigator.storage?.persist?.().catch(() => {});
 
     for (const m of await db.getAll('meta')) this.meta.set(m.key, m);
+    for (const t of await db.getAll('tags')) this.tags.set(t.id, t);
 
     const folders = await db.getAll('folders');
     this.folders = folders.map((f) => ({ ...f, status: 'needs-permission', count: 0 }));
@@ -115,7 +117,40 @@ export class Library extends EventTarget {
   async removeImport(entryId) {
     const id = entryId.replace(/^imp:/, '');
     await db.del('imports', id);
+    this.tags.delete(entryId);
+    await db.del('tags', entryId);
     await this._rebuild();
+  }
+
+  // ---------- favorites + tags ----------
+
+  async _saveTags(entry) {
+    const rec = { id: entry.id, favorite: entry.favorite, tags: entry.tags };
+    if (!rec.favorite && !rec.tags.length) {
+      this.tags.delete(entry.id);
+      await db.del('tags', entry.id);
+    } else {
+      this.tags.set(entry.id, rec);
+      await db.put('tags', rec);
+    }
+    this.dispatchEvent(new CustomEvent('entry', { detail: entry }));
+  }
+
+  async setFavorite(entry, on) {
+    entry.favorite = on;
+    await this._saveTags(entry);
+  }
+
+  /** tags: array of strings; trimmed, lowercased, de-duplicated. */
+  async setTags(entry, tags) {
+    entry.tags = [...new Set(tags.map((t) => t.trim().toLowerCase()).filter(Boolean))].sort();
+    await this._saveTags(entry);
+  }
+
+  allTags() {
+    const set = new Set();
+    for (const e of this.entries) for (const t of e.tags) set.add(t);
+    return [...set].sort();
   }
 
   // ---------- scanning ----------
@@ -146,7 +181,13 @@ export class Library extends EventTarget {
 
   _makeEntry({ id, sourceId, source, name, folder, size, lastModified, getFile }) {
     const cacheKey = `${id}|${size}|${lastModified}`;
-    return { id, sourceId, source, name, folder, size, lastModified, getFile, cacheKey, stats: this.meta.get(cacheKey)?.stats };
+    const t = this.tags.get(id);
+    return {
+      id, sourceId, source, name, folder, size, lastModified, getFile, cacheKey,
+      stats: this.meta.get(cacheKey)?.stats,
+      favorite: !!t?.favorite,
+      tags: t?.tags ?? [],
+    };
   }
 
   async _rebuild() {

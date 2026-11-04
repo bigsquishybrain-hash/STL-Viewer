@@ -4,7 +4,7 @@ An offline STL viewer for PC, Android and iPad, built with three.js and Vite.
 
 ## Status
 
-Step 2 of 4: viewer plus file library. Extra tools and offline install come next.
+Step 3 of 4: viewer, file library and tools. Offline install comes next.
 
 ## Features so far
 
@@ -21,6 +21,14 @@ Step 2 of 4: viewer plus file library. Extra tools and offline install come next
 - **Import files / Import a whole folder** (works everywhere, and it's the only option on iPad): files are copied into the app's own storage.
 - Thumbnail grid, list, and sortable details views, with search across names and folders
 - Thumbnails and stats are generated once in the background and cached
+
+## Tools
+
+- **Measure**: tap two points on the model to get the distance plus ΔX/ΔY/ΔZ. Measurements stay until you clear them.
+- **Section cut**: slice along X, Y or Z with a slider. Cut faces show in orange, and you can flip which half is kept.
+- **Compare**: in the library hit Compare, pick 2 to 6 files, and they sit side by side on one build plate at true scale, each with its own color and label.
+- **Favorites and tags**: star files in the library or viewer, and tag them from the viewer panel. You can filter by favorites or by tag, and search matches tags too.
+- **Screenshot**: 📷 saves a PNG. On phones and tablets it opens the share sheet so you can save to Photos.
 
 ## Develop
 
