@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#16181c" />
+    <title>STL Viewer</title>
+  </head>
+  <body>
+    <header class="topbar">
+      <h1>STL Viewer</h1>
+      <span id="file-name" class="file-name"></span>
+      <div class="spacer"></div>
+      <button id="panel-toggle" class="icon-btn" aria-label="Toggle panel" title="Toggle panel">☰</button>
+      <label class="btn primary">
+        Open STL
+        <input id="file-input" type="file" accept=".stl,model/stl,application/sla,application/vnd.ms-pki.stl" hidden />
+      </label>
+    </header>
+
+    <main class="layout">
+      <section id="viewport" class="viewport">
+        <div id="empty" class="empty">
+          <div class="empty-card">
+            <div class="empty-icon">⬢</div>
+            <p><strong>Drop an STL file here</strong></p>
+            <p class="muted">or hit "Open STL" up top</p>
+          </div>
+        </div>
+        <div id="loading" class="loading" hidden>Loading…</div>
+        <div class="view-buttons" id="view-buttons">
+          <button data-view="iso">Iso</button>
+          <button data-view="top">Top</button>
+          <button data-view="front">Front</button>
+          <button data-view="right">Right</button>
+        </div>
+      </section>
+
+      <aside id="panel" class="panel">
+        <section>
+          <h2>Display</h2>
+          <div class="segmented" id="mode">
+            <button data-mode="solid" class="active">Solid</button>
+            <button data-mode="wireframe">Wire</button>
+            <button data-mode="xray">X-ray</button>
+            <button data-mode="normals">Normals</button>
+          </div>
+
+          <label class="row">
+            <span>Color</span>
+            <input id="color" type="color" value="#4f9dde" />
+          </label>
+          <div class="swatches" id="swatches"></div>
+
+          <label class="row">
+            <span>Lighting</span>
+            <select id="lighting">
+              <option value="studio">Studio</option>
+              <option value="bright">Bright</option>
+              <option value="dramatic">Dramatic</option>
+            </select>
+          </label>
+
+          <label class="row">
+            <span>Background</span>
+            <input id="background" type="color" value="#1b1d22" />
+          </label>
+
+          <label class="check"><input id="smooth" type="checkbox" checked /> Smooth shading</label>
+          <label class="check"><input id="grid" type="checkbox" checked /> Build plate grid</label>
+          <label class="check"><input id="box" type="checkbox" /> Bounding box</label>
+          <label class="check"><input id="axes" type="checkbox" /> Axes</label>
+          <label class="check"><input id="autorotate" type="checkbox" /> Auto-rotate</label>
+        </section>
+
+        <section>
+          <h2>Model info</h2>
+          <dl id="info" class="info">
+            <div><dt>File</dt><dd>—</dd></div>
+          </dl>
+        </section>
+      </aside>
+    </main>
+
+    <div id="drop-overlay" class="drop-overlay" hidden>Drop it like it's hot</div>
+    <div id="toast" class="toast" hidden></div>
+
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
