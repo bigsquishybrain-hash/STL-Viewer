@@ -449,7 +449,9 @@ export class Viewer extends EventTarget {
     }
     this._sectionValue = s;
     // three.js discards the side where n·p + c < 0. Default keeps w·p <= s; flip keeps the other half.
-    if (flip) this.clipPlane.set(w, -s);
+    // The default camera looks from file -Y, so for Y keep the far half so the cut faces you.
+    const keepHigh = axis === 'y' ? !flip : flip;
+    if (keepHigh) this.clipPlane.set(w, -s);
     else this.clipPlane.set(w.negate(), s);
   }
 
