@@ -4,7 +4,7 @@ An offline STL viewer for PC, Android and iPad, built with three.js and Vite.
 
 ## Status
 
-Step 1 of 4: the 3D viewer. Library browsing (thumbnails, lists), extra tools, and offline install come next.
+Step 2 of 4: viewer plus file library. Extra tools and offline install come next.
 
 ## Features so far
 
@@ -14,6 +14,13 @@ Step 1 of 4: the 3D viewer. Library browsing (thumbnails, lists), extra tools, a
 - Model color, background color, three lighting presets, smooth or faceted shading
 - Build plate grid, bounding box, axes, auto-rotate
 - Model info: triangle count, X/Y/Z size, volume, surface area, estimated solid PLA weight
+
+## Library
+
+- **Add folder** (Chrome/Edge on PC and Android): pick a folder once and it's remembered. Files stay where they are and subfolders are scanned. After a browser restart you may need to tap **Reconnect** to re-grant read access.
+- **Import files / Import a whole folder** (works everywhere, and it's the only option on iPad): files are copied into the app's own storage.
+- Thumbnail grid, list, and sortable details views, with search across names and folders
+- Thumbnails and stats are generated once in the background and cached
 
 ## Develop
 

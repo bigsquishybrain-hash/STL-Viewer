@@ -6,81 +6,125 @@
     <meta name="theme-color" content="#16181c" />
     <title>STL Viewer</title>
   </head>
-  <body>
-    <header class="topbar">
-      <h1>STL Viewer</h1>
-      <span id="file-name" class="file-name"></span>
-      <div class="spacer"></div>
-      <button id="panel-toggle" class="icon-btn" aria-label="Toggle panel" title="Toggle panel">☰</button>
-      <label class="btn primary">
-        Open STL
-        <input id="file-input" type="file" accept=".stl,model/stl,application/sla,application/vnd.ms-pki.stl" hidden />
-      </label>
-    </header>
-
-    <main class="layout">
-      <section id="viewport" class="viewport">
-        <div id="empty" class="empty">
-          <div class="empty-card">
-            <div class="empty-icon">⬢</div>
-            <p><strong>Drop an STL file here</strong></p>
-            <p class="muted">or hit "Open STL" up top</p>
+  <body data-screen="library">
+    <!-- ================= Library ================= -->
+    <div id="library-screen" class="screen">
+      <header class="topbar">
+        <h1>STL Library</h1>
+        <div class="spacer"></div>
+        <div class="add-menu">
+          <button id="add-btn" class="btn primary" aria-haspopup="menu" aria-expanded="false">+ Add</button>
+          <div id="add-popup" class="popup" role="menu" hidden>
+            <button id="add-folder" role="menuitem">Add folder<small>Stays in place, remembered</small></button>
+            <label role="menuitem">Import files<small>Copied into the app</small><input id="import-files" type="file" accept=".stl,model/stl,application/sla,application/vnd.ms-pki.stl" multiple hidden /></label>
+            <label id="import-folder-label" role="menuitem">Import a whole folder<small>Copied into the app</small><input id="import-folder" type="file" webkitdirectory multiple hidden /></label>
           </div>
         </div>
-        <div id="loading" class="loading" hidden>Loading…</div>
-        <div class="view-buttons" id="view-buttons">
-          <button data-view="iso">Iso</button>
-          <button data-view="top">Top</button>
-          <button data-view="front">Front</button>
-          <button data-view="right">Right</button>
+      </header>
+
+      <div class="lib-toolbar">
+        <input id="search" class="search" type="search" placeholder="Search files and folders" autocomplete="off" />
+        <select id="sort-key" aria-label="Sort by">
+          <option value="name">Name</option>
+          <option value="folder">Folder</option>
+          <option value="size">File size</option>
+          <option value="modified">Modified</option>
+          <option value="triangles">Triangles</option>
+          <option value="height">Height</option>
+          <option value="volume">Volume</option>
+        </select>
+        <button id="sort-dir" class="icon-btn" title="Sort direction" aria-label="Sort direction">↑</button>
+        <div class="segmented compact" id="view-mode" role="group" aria-label="View">
+          <button data-view="grid" class="active" title="Thumbnails">▦</button>
+          <button data-view="list" title="List">☰</button>
+          <button data-view="details" title="Details">▤</button>
         </div>
-      </section>
+      </div>
 
-      <aside id="panel" class="panel">
-        <section>
-          <h2>Display</h2>
-          <div class="segmented" id="mode">
-            <button data-mode="solid" class="active">Solid</button>
-            <button data-mode="wireframe">Wire</button>
-            <button data-mode="xray">X-ray</button>
-            <button data-mode="normals">Normals</button>
+      <div id="sources" class="sources"></div>
+      <div id="progress" class="progress" hidden><div class="bar"><div id="progress-fill"></div></div><span id="progress-text"></span></div>
+
+      <main id="lib-content" class="lib-content"></main>
+      <div id="lib-empty" class="lib-empty" hidden>
+        <div class="empty-card">
+          <div class="empty-icon">⬢</div>
+          <p><strong>Your library is empty</strong></p>
+          <p class="muted" id="lib-empty-hint">Hit "+ Add" to point at a folder or import some files.<br />You can also drag files in.</p>
+        </div>
+      </div>
+      <div id="lib-nomatch" class="lib-empty" hidden><p class="muted">Nothing matches that search.</p></div>
+    </div>
+
+    <!-- ================= Viewer ================= -->
+    <div id="viewer-screen" class="screen">
+      <header class="topbar">
+        <button id="back-btn" class="icon-btn" aria-label="Back to library" title="Back to library">← Library</button>
+        <span id="file-name" class="file-name"></span>
+        <div class="spacer"></div>
+        <button id="panel-toggle" class="icon-btn" aria-label="Toggle panel" title="Toggle panel">☰</button>
+        <label class="btn">
+          Open STL
+          <input id="file-input" type="file" accept=".stl,model/stl,application/sla,application/vnd.ms-pki.stl" hidden />
+        </label>
+      </header>
+
+      <main class="layout">
+        <section id="viewport" class="viewport">
+          <div id="loading" class="loading" hidden>Loading…</div>
+          <div class="view-buttons" id="view-buttons">
+            <button data-view="iso">Iso</button>
+            <button data-view="top">Top</button>
+            <button data-view="front">Front</button>
+            <button data-view="right">Right</button>
           </div>
-
-          <label class="row">
-            <span>Color</span>
-            <input id="color" type="color" value="#4f9dde" />
-          </label>
-          <div class="swatches" id="swatches"></div>
-
-          <label class="row">
-            <span>Lighting</span>
-            <select id="lighting">
-              <option value="studio">Studio</option>
-              <option value="bright">Bright</option>
-              <option value="dramatic">Dramatic</option>
-            </select>
-          </label>
-
-          <label class="row">
-            <span>Background</span>
-            <input id="background" type="color" value="#1b1d22" />
-          </label>
-
-          <label class="check"><input id="smooth" type="checkbox" checked /> Smooth shading</label>
-          <label class="check"><input id="grid" type="checkbox" checked /> Build plate grid</label>
-          <label class="check"><input id="box" type="checkbox" /> Bounding box</label>
-          <label class="check"><input id="axes" type="checkbox" /> Axes</label>
-          <label class="check"><input id="autorotate" type="checkbox" /> Auto-rotate</label>
         </section>
 
-        <section>
-          <h2>Model info</h2>
-          <dl id="info" class="info">
-            <div><dt>File</dt><dd>—</dd></div>
-          </dl>
-        </section>
-      </aside>
-    </main>
+        <aside id="panel" class="panel">
+          <section>
+            <h2>Display</h2>
+            <div class="segmented" id="mode">
+              <button data-mode="solid" class="active">Solid</button>
+              <button data-mode="wireframe">Wire</button>
+              <button data-mode="xray">X-ray</button>
+              <button data-mode="normals">Normals</button>
+            </div>
+
+            <label class="row">
+              <span>Color</span>
+              <input id="color" type="color" value="#4f9dde" />
+            </label>
+            <div class="swatches" id="swatches"></div>
+
+            <label class="row">
+              <span>Lighting</span>
+              <select id="lighting">
+                <option value="studio">Studio</option>
+                <option value="bright">Bright</option>
+                <option value="dramatic">Dramatic</option>
+              </select>
+            </label>
+
+            <label class="row">
+              <span>Background</span>
+              <input id="background" type="color" value="#1b1d22" />
+            </label>
+
+            <label class="check"><input id="smooth" type="checkbox" checked /> Smooth shading</label>
+            <label class="check"><input id="grid" type="checkbox" checked /> Build plate grid</label>
+            <label class="check"><input id="box" type="checkbox" /> Bounding box</label>
+            <label class="check"><input id="axes" type="checkbox" /> Axes</label>
+            <label class="check"><input id="autorotate" type="checkbox" /> Auto-rotate</label>
+          </section>
+
+          <section>
+            <h2>Model info</h2>
+            <dl id="info" class="info">
+              <div><dt>File</dt><dd>—</dd></div>
+            </dl>
+          </section>
+        </aside>
+      </main>
+    </div>
 
     <div id="drop-overlay" class="drop-overlay" hidden>Drop it like it's hot</div>
     <div id="toast" class="toast" hidden></div>
