@@ -34,6 +34,9 @@
           <option value="volume">Volume</option>
         </select>
         <button id="sort-dir" class="icon-btn" title="Sort direction" aria-label="Sort direction">↑</button>
+        <button id="fav-filter" class="icon-btn" title="Favorites only" aria-label="Favorites only" aria-pressed="false">☆</button>
+        <select id="tag-filter" aria-label="Filter by tag" hidden><option value="">All tags</option></select>
+        <button id="compare-btn" class="icon-btn" title="Pick files to compare side by side" aria-pressed="false">Compare</button>
         <div class="segmented compact" id="view-mode" role="group" aria-label="View">
           <button data-view="grid" class="active" title="Thumbnails">▦</button>
           <button data-view="list" title="List">☰</button>
@@ -41,6 +44,12 @@
         </div>
       </div>
 
+      <div id="compare-bar" class="compare-bar" hidden>
+        <span id="compare-text">Tap 2 to 6 files to compare them side by side.</span>
+        <div class="spacer"></div>
+        <button id="compare-go" class="btn primary" disabled>Compare</button>
+        <button id="compare-cancel" class="btn">Cancel</button>
+      </div>
       <div id="sources" class="sources"></div>
       <div id="progress" class="progress" hidden><div class="bar"><div id="progress-fill"></div></div><span id="progress-text"></span></div>
 
@@ -61,6 +70,8 @@
         <button id="back-btn" class="icon-btn" aria-label="Back to library" title="Back to library">← Library</button>
         <span id="file-name" class="file-name"></span>
         <div class="spacer"></div>
+        <button id="viewer-fav" class="icon-btn fav-toggle" aria-label="Favorite" title="Favorite" hidden>☆</button>
+        <button id="screenshot-btn" class="icon-btn" aria-label="Save screenshot" title="Save screenshot">📷</button>
         <button id="panel-toggle" class="icon-btn" aria-label="Toggle panel" title="Toggle panel">☰</button>
         <label class="btn">
           Open STL
@@ -71,6 +82,7 @@
       <main class="layout">
         <section id="viewport" class="viewport">
           <div id="loading" class="loading" hidden>Loading…</div>
+          <div id="measure-hint" class="measure-hint" hidden>Tap two points on the model</div>
           <div class="view-buttons" id="view-buttons">
             <button data-view="iso">Iso</button>
             <button data-view="top">Top</button>
@@ -80,6 +92,33 @@
         </section>
 
         <aside id="panel" class="panel">
+          <section>
+            <h2>Tools</h2>
+            <div class="tool-row">
+              <button id="measure-btn" class="btn" aria-pressed="false">📏 Measure</button>
+              <button id="measure-clear" class="btn" disabled>Clear</button>
+            </div>
+            <ol id="measure-list" class="measure-list"></ol>
+
+            <div class="row"><span>Section cut</span><span id="section-readout" class="muted"></span></div>
+            <div class="segmented" id="section-axis">
+              <button data-axis="" class="active">Off</button>
+              <button data-axis="x">X</button>
+              <button data-axis="y">Y</button>
+              <button data-axis="z">Z</button>
+            </div>
+            <div id="section-controls" hidden>
+              <input id="section-pos" type="range" min="0" max="1000" value="500" aria-label="Section position" />
+              <label class="check"><input id="section-flip" type="checkbox" /> Flip side</label>
+            </div>
+          </section>
+
+          <section id="tags-section" hidden>
+            <h2>Tags</h2>
+            <input id="tags-input" class="search" type="text" placeholder="e.g. robot, pla, done" autocomplete="off" />
+            <p class="muted small">Comma separated. Saved when you leave the box.</p>
+          </section>
+
           <section>
             <h2>Display</h2>
             <div class="segmented" id="mode">

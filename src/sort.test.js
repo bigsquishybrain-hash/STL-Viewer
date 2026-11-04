@@ -29,6 +29,14 @@ describe('filterAndSort', () => {
     expect(filterAndSort(entries, { query: 'nope' })).toEqual([]);
   });
 
+  it('filters favorites and tags, and searches tags', () => {
+    const tagged = entries.map((e, i) => ({ ...e, favorite: i === 1, tags: i === 0 ? ['robot', 'pla'] : [] }));
+    expect(names(filterAndSort(tagged, { favorites: true }))).toEqual(['part2.stl']);
+    expect(names(filterAndSort(tagged, { tag: 'robot' }))).toEqual(['part10.stl']);
+    expect(names(filterAndSort(tagged, { query: 'pla' }))).toEqual(['part10.stl']);
+    expect(filterAndSort(tagged, { favorites: true, tag: 'robot' })).toEqual([]);
+  });
+
   it('does not mutate the input', () => {
     const copy = entries.slice();
     filterAndSort(entries, { key: 'size' });

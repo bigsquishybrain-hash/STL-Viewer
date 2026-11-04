@@ -15,17 +15,18 @@ export const SORT_KEYS = {
 };
 
 /**
- * Filter by a search string (matches name and folder path, all words must match),
+ * Filter by favorites / tag and a search string (matches name, folder path and tags; all words must match),
  * then sort by key/direction. Entries missing the sort value (stats not computed yet) go last.
  */
-export function filterAndSort(entries, { query = '', key = 'name', dir = 'asc' } = {}) {
+export function filterAndSort(entries, { query = '', key = 'name', dir = 'asc', favorites = false, tag = '' } = {}) {
   const words = query.toLowerCase().split(/\s+/).filter(Boolean);
-  const filtered = words.length
-    ? entries.filter((e) => {
-        const hay = `${e.name} ${e.folder ?? ''}`.toLowerCase();
-        return words.every((w) => hay.includes(w));
-      })
-    : entries.slice();
+  const filtered = entries.filter((e) => {
+    if (favorites && !e.favorite) return false;
+    if (tag && !(e.tags ?? []).includes(tag)) return false;
+    if (!words.length) return true;
+    const hay = `${e.name} ${e.folder ?? ''} ${(e.tags ?? []).join(' ')}`.toLowerCase();
+    return words.every((w) => hay.includes(w));
+  });
 
   const get = SORT_KEYS[key] ?? SORT_KEYS.name;
   const sign = dir === 'desc' ? -1 : 1;

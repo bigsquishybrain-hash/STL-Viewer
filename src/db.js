@@ -4,9 +4,10 @@
 //   folders  { id, name, handle }            remembered FileSystemDirectoryHandles
 //   imports  { id, name, size, lastModified, added, blob }   files copied into the app
 //   meta     { key, thumb (Blob), stats }    thumbnail + stats cache, keyed by file identity
+//   tags     { id, favorite, tags[] }        user labels, keyed by library entry id
 
 const DB_NAME = 'stl-viewer';
-const DB_VERSION = 1;
+const DB_VERSION = 2;
 
 let dbPromise;
 
@@ -19,6 +20,7 @@ function open() {
         if (!db.objectStoreNames.contains('folders')) db.createObjectStore('folders', { keyPath: 'id' });
         if (!db.objectStoreNames.contains('imports')) db.createObjectStore('imports', { keyPath: 'id' });
         if (!db.objectStoreNames.contains('meta')) db.createObjectStore('meta', { keyPath: 'key' });
+        if (!db.objectStoreNames.contains('tags')) db.createObjectStore('tags', { keyPath: 'id' });
       };
       req.onsuccess = () => resolve(req.result);
       req.onerror = () => reject(req.error);

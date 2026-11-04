@@ -31,12 +31,16 @@ const vol = (s) => (s ? `${formatNumber(s.volume / 1000, 1)} cm³` : '—');
 
 /** Renders the library as a thumbnail grid, a compact list, or a sortable details table. */
 export class LibraryView {
-  constructor(container, library, { onOpen, onRemove }) {
+  constructor(container, library, { onOpen, onRemove, onFavorite, onSelectionChange }) {
     this.container = container;
     this.library = library;
     this.onOpen = onOpen;
     this.onRemove = onRemove;
-    this.state = { view: 'grid', query: '', key: 'name', dir: 'asc' };
+    this.onFavorite = onFavorite;
+    this.onSelectionChange = onSelectionChange;
+    this.state = { view: 'grid', query: '', key: 'name', dir: 'asc', favorites: false, tag: '' };
+    this.selecting = false;
+    this.selected = new Set();
     this.visible = [];
 
     container.addEventListener('click', (e) => {
@@ -44,6 +48,13 @@ export class LibraryView {
       if (rm) {
         e.stopPropagation();
         this.onRemove(this._find(rm.dataset.remove));
+        return;
+      }
+      const fav = e.target.closest('[data-fav]');
+      if (fav) {
+        e.stopPropagation();
+        const entry = this._find(fav.dataset.fav);
+        if (entry) this.onFavorite(entry, !entry.favorite);
         return;
       }
       const th = e.target.closest('th[data-sort]');
@@ -54,16 +65,44 @@ export class LibraryView {
         return;
       }
       const item = e.target.closest('[data-id]');
-      if (item) this.onOpen(this._find(item.dataset.id));
+      if (item) this._activate(item.dataset.id);
     });
     container.addEventListener('keydown', (e) => {
       if (e.key !== 'Enter' && e.key !== ' ') return;
       const item = e.target.closest('[data-id]');
-      if (item) {
+      if (item && e.target === item) {
         e.preventDefault();
-        this.onOpen(this._find(item.dataset.id));
+        this._activate(item.dataset.id);
       }
     });
+  }
+
+  _activate(id) {
+    if (!this.selecting) {
+      this.onOpen(this._find(id));
+      return;
+    }
+    if (this.selected.has(id)) {
+      this.selected.delete(id);
+      this.render(); // selection numbers shift
+    } else {
+      this.selected.add(id);
+      const entry = this._find(id);
+      if (entry) this.update(entry);
+    }
+    this.onSelectionChange?.(this.selectedEntries());
+  }
+
+  setSelecting(on) {
+    this.selecting = on;
+    this.selected.clear();
+    this.container.classList.toggle('selecting', on);
+    this.render();
+    this.onSelectionChange?.([]);
+  }
+
+  selectedEntries() {
+    return [...this.selected].map((id) => this._find(id)).filter(Boolean);
   }
 
   _find(id) {
@@ -76,8 +115,8 @@ export class LibraryView {
   }
 
   render() {
-    const { view, query, key, dir } = this.state;
-    this.visible = filterAndSort(this.library.entries, { query, key, dir });
+    const { view, query, key, dir, favorites, tag } = this.state;
+    this.visible = filterAndSort(this.library.entries, { query, key, dir, favorites, tag });
     let body;
     if (view === 'details') body = this._details();
     else if (view === 'list') body = el('ul', { class: 'lib-list' }, ...this.visible.map((e) => this._listItem(e)));
@@ -103,18 +142,46 @@ export class LibraryView {
     return el('div', { class: `${cls} thumb-placeholder` }, el('span', {}, label));
   }
 
+  _favBtn(entry) {
+    return el(
+      'button',
+      {
+        class: `fav-btn${entry.favorite ? ' on' : ''}`,
+        title: entry.favorite ? 'Unfavorite' : 'Favorite',
+        'aria-label': entry.favorite ? `Unfavorite ${entry.name}` : `Favorite ${entry.name}`,
+        'aria-pressed': String(entry.favorite),
+        dataset: { fav: entry.id },
+      },
+      entry.favorite ? '★' : '☆'
+    );
+  }
+
+  _tagList(entry) {
+    if (!entry.tags.length) return null;
+    return el('div', { class: 'tag-list' }, ...entry.tags.map((t) => el('span', { class: 'tag' }, t)));
+  }
+
+  _check(entry) {
+    if (!this.selecting) return null;
+    const i = [...this.selected].indexOf(entry.id);
+    return el('span', { class: `select-check${i >= 0 ? ' on' : ''}`, 'aria-hidden': 'true' }, i >= 0 ? String(i + 1) : '');
+  }
+
   _removeBtn(entry) {
-    if (entry.source !== 'import') return null;
+    if (entry.source !== 'import' || this.selecting) return null;
     return el('button', { class: 'remove-btn', title: 'Remove from library', 'aria-label': `Remove ${entry.name}`, dataset: { remove: entry.id } }, '✕');
   }
 
   _card(e) {
     return el(
       'li',
-      { class: 'card', tabindex: 0, dataset: { id: e.id }, title: `${e.folder}/${e.name}` },
+      { class: `card${this.selected.has(e.id) ? ' selected' : ''}`, tabindex: 0, dataset: { id: e.id }, title: `${e.folder}/${e.name}` },
       this._thumb(e, 'card-thumb'),
       el('div', { class: 'card-name' }, e.name.replace(/\.stl$/i, '')),
       el('div', { class: 'card-sub' }, e.stats ? `${dims(e.stats)} mm` : formatBytes(e.size)),
+      this._tagList(e),
+      this._favBtn(e),
+      this._check(e),
       this._removeBtn(e)
     );
   }
@@ -122,9 +189,11 @@ export class LibraryView {
   _listItem(e) {
     return el(
       'li',
-      { class: 'list-item', tabindex: 0, dataset: { id: e.id } },
+      { class: `list-item${this.selected.has(e.id) ? ' selected' : ''}`, tabindex: 0, dataset: { id: e.id } },
+      this._check(e),
       this._thumb(e, 'list-thumb'),
-      el('div', { class: 'list-main' }, el('div', { class: 'list-name' }, e.name), el('div', { class: 'list-sub' }, e.folder)),
+      el('div', { class: 'list-main' }, el('div', { class: 'list-name' }, e.name), el('div', { class: 'list-sub' }, e.folder), this._tagList(e)),
+      this._favBtn(e),
       el('div', { class: 'list-meta' }, el('div', {}, formatBytes(e.size)), el('div', { class: 'list-sub' }, e.stats ? `${dims(e.stats)} mm` : '')),
       this._removeBtn(e)
     );
@@ -136,6 +205,7 @@ export class LibraryView {
       'tr',
       {},
       el('th', { class: 'col-thumb' }),
+      el('th', { class: 'col-fav' }),
       ...DETAIL_COLUMNS.map((c) =>
         el(
           'th',
@@ -156,9 +226,10 @@ export class LibraryView {
     const s = e.stats;
     return el(
       'tr',
-      { tabindex: 0, dataset: { id: e.id } },
-      el('td', { class: 'col-thumb' }, this._thumb(e, 'row-thumb')),
-      el('td', { class: 'name' }, e.name),
+      { tabindex: 0, dataset: { id: e.id }, class: this.selected.has(e.id) ? 'selected' : null },
+      el('td', { class: 'col-thumb' }, this._check(e) ?? this._thumb(e, 'row-thumb')),
+      el('td', { class: 'col-fav' }, this._favBtn(e)),
+      el('td', { class: 'name' }, e.name, this._tagList(e)),
       el('td', { class: 'muted' }, e.folder),
       el('td', { class: 'num' }, formatBytes(e.size)),
       el('td', { class: 'num' }, dims(s)),
